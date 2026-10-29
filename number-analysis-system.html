@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#101828">
+  <title>Number Analysis System | CPROG 1</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1020;
+      --surface: #121a2e;
+      --surface-2: #18233c;
+      --line: #2a3855;
+      --text: #edf3ff;
+      --muted: #9eacc6;
+      --accent: #7c9cff;
+      --accent-2: #a78bfa;
+      --good: #52d6a3;
+      --bad: #ff8795;
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(ellipse at 10% 0%, rgba(93, 119, 255, .18), transparent 38%),
+        radial-gradient(ellipse at 100% 10%, rgba(167, 139, 250, .12), transparent 32%),
+        var(--bg);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+    .page { width: min(1120px, calc(100% - 32px)); margin: 0 auto; padding: 36px 0 48px; }
+    .topbar { display: flex; gap: 18px; align-items: center; margin-bottom: 28px; }
+    .brand-mark {
+      width: 54px; height: 54px; flex: 0 0 auto; border-radius: 17px;
+      display: grid; place-items: center; font-size: 25px; font-weight: 800;
+      color: white; background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: 0 12px 30px rgba(124, 156, 255, .22);
+    }
+    .eyebrow { color: #aabaff; font-size: .75rem; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; margin: 0 0 4px; }
+    h1 { margin: 0; font-size: clamp(1.55rem, 3vw, 2.25rem); letter-spacing: -.04em; line-height: 1.15; }
+    .subtitle { margin: 8px 0 0; color: var(--muted); }
+    .layout { display: grid; grid-template-columns: minmax(265px, .82fr) minmax(0, 1.6fr); gap: 20px; align-items: start; }
+    .panel { border: 1px solid var(--line); border-radius: var(--radius); background: rgba(18, 26, 46, .92); box-shadow: 0 18px 55px rgba(0,0,0,.16); }
+    .menu { padding: 19px; }
+    .section-title { margin: 0 0 13px; font-size: .95rem; }
+    .menu-list { display: grid; gap: 9px; }
+    .menu-button {
+      display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+      padding: 12px; border: 1px solid transparent; border-radius: 13px;
+      color: var(--text); background: transparent; cursor: pointer; font: inherit;
+      transition: border-color .15s ease, background .15s ease, transform .15s ease;
+    }
+    .menu-button:hover { background: rgba(124, 156, 255, .08); border-color: var(--line); }
+    .menu-button:focus-visible, input:focus-visible, .primary:focus-visible, .secondary:focus-visible { outline: 3px solid rgba(124,156,255,.55); outline-offset: 2px; }
+    .menu-button.active { background: linear-gradient(100deg, rgba(124,156,255,.18), rgba(167,139,250,.08)); border-color: rgba(124,156,255,.42); }
+    .menu-number { display: grid; place-items: center; width: 35px; height: 35px; flex: 0 0 auto; border-radius: 10px; background: var(--surface-2); color: #c7d2ff; font-weight: 800; }
+    .menu-button.active .menu-number { color: white; background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
+    .menu-text { display: grid; gap: 2px; }
+    .menu-text strong { font-size: .9rem; font-weight: 700; }
+    .menu-text small { color: var(--muted); font-size: .76rem; }
+    .menu-note { margin: 17px 3px 0; color: var(--muted); font-size: .79rem; }
+    .workspace { min-height: 470px; overflow: hidden; }
+    .workspace-head { padding: 25px 26px 20px; border-bottom: 1px solid var(--line); background: linear-gradient(110deg, rgba(124,156,255,.07), transparent 68%); }
+    .workspace-kicker { color: #aabaff; text-transform: uppercase; letter-spacing: .12em; font-size: .72rem; font-weight: 800; margin: 0 0 7px; }
+    h2 { margin: 0; font-size: clamp(1.35rem, 2.7vw, 1.8rem); letter-spacing: -.03em; }
+    .description { margin: 8px 0 0; color: var(--muted); }
+    .workspace-body { padding: 25px 26px 27px; }
+    .form-grid { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: end; }
+    .field { display: grid; gap: 8px; }
+    label { color: #dbe5fa; font-size: .9rem; font-weight: 650; }
+    input[type="number"] { width: 100%; min-height: 47px; padding: 11px 13px; border: 1px solid #3a4a6b; border-radius: 11px; background: #0b1223; color: var(--text); font: inherit; }
+    input[type="number"]::placeholder { color: #6f7e9c; }
+    .primary, .secondary { min-height: 47px; border-radius: 11px; padding: 11px 17px; cursor: pointer; font: inherit; font-weight: 750; transition: transform .15s ease, filter .15s ease; }
+    .primary { color: #fff; border: 0; background: linear-gradient(135deg, #6889ff, #9b7cf4); box-shadow: 0 8px 22px rgba(104,137,255,.18); }
+    .secondary { color: var(--text); border: 1px solid var(--line); background: var(--surface-2); }
+    .primary:hover, .secondary:hover { filter: brightness(1.08); transform: translateY(-1px); }
+    .result { margin-top: 22px; padding: 17px; border: 1px solid var(--line); border-radius: 13px; background: #0c1426; }
+    .result-title { display: flex; gap: 8px; align-items: center; margin: 0 0 8px; color: var(--muted); font-size: .77rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    .result-title::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+    .result-content { margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; font-size: 1.02rem; }
+    .result-content.success { color: var(--good); }
+    /* Keep pyramid spacing aligned like the original C++ console output. */
+    .result-content.pyramid-output { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; white-space: pre; overflow-x: auto; line-height: 1.45; font-size: 1.12rem; }
+    .result-content.error { color: var(--bad); }
+    .hint { margin: 15px 0 0; color: var(--muted); font-size: .82rem; }
+    .welcome { display: grid; gap: 18px; }
+    .welcome-icon { font-size: 2.2rem; }
+    .welcome p { color: var(--muted); margin: 0; }
+    .welcome-stats { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin-top: 5px; }
+    .stat { padding: 15px 13px; border: 1px solid var(--line); border-radius: 13px; background: rgba(24,35,60,.72); }
+    .stat strong { display: block; font-size: 1.35rem; }
+    .stat span { color: var(--muted); font-size: .78rem; }
+    .exit-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+    footer { margin-top: 20px; color: #7f8daa; text-align: center; font-size: .77rem; }
+    @media (max-width: 760px) {
+      .page { width: min(100% - 22px, 590px); padding-top: 24px; }
+      .layout { grid-template-columns: 1fr; }
+      .menu { padding: 15px; }
+      .menu-list { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .menu-button { gap: 9px; padding: 10px; }
+      .menu-text strong { font-size: .82rem; }
+      .menu-text small { font-size: .7rem; }
+      .menu-number { width: 31px; height: 31px; }
+      .workspace { min-height: 0; }
+      .workspace-head { padding: 21px 19px 17px; }
+      .workspace-body { padding: 20px 19px 23px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .primary { width: 100%; }
+      .welcome-stats { grid-template-columns: 1fr; }
+      .stat { display: flex; justify-content: space-between; align-items: center; }
+    }
+    @media (max-width: 390px) {
+      .topbar { align-items: flex-start; }
+      .brand-mark { width: 44px; height: 44px; border-radius: 13px; }
+      .menu-list { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div class="brand-mark" aria-hidden="true">#</div>
+      <div>
+        <p class="eyebrow">CPROG 1 · Chapter IV Activity</p>
+        <h1>Number Analysis System</h1>
+        <p class="subtitle">A simple interactive number toolkit.</p>
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside class="panel menu" aria-label="Program menu">
+        <h2 class="section-title">Main menu</h2>
+        <nav class="menu-list">
+          <button class="menu-button" type="button" data-tool="factorial" aria-pressed="false">
+            <span class="menu-number">1</span><span class="menu-text"><strong>Calculate Factorial</strong><small>Find n!</small></span>
+          </button>
+          <button class="menu-button" type="button" data-tool="prime" aria-pressed="false">
+            <span class="menu-number">2</span><span class="menu-text"><strong>Check Prime</strong><small>Test one number</small></span>
+          </button>
+          <button class="menu-button" type="button" data-tool="palindrome" aria-pressed="false">
+            <span class="menu-number">3</span><span class="menu-text"><strong>Reverse &amp; Palindrome</strong><small>Reverse its digits</small></span>
+          </button>
+          <button class="menu-button" type="button" data-tool="range" aria-pressed="false">
+            <span class="menu-number">4</span><span class="menu-text"><strong>Prime Number Range</strong><small>List primes in a range</small></span>
+          </button>
+          <button class="menu-button" type="button" data-tool="pyramid" aria-pressed="false">
+            <span class="menu-number">5</span><span class="menu-text"><strong>Number Pyramid</strong><small>Print 1–9 rows</small></span>
+          </button>
+          <button class="menu-button" type="button" data-tool="exit" aria-pressed="false">
+            <span class="menu-number">6</span><span class="menu-text"><strong>Exit</strong><small>End this session</small></span>
+          </button>
+        </nav>
+        <p class="menu-note">Choose a feature to begin. All calculations run locally in your browser.</p>
+      </aside>
+
+      <section class="panel workspace" aria-live="polite" aria-atomic="true">
+        <div class="workspace-head">
+          <p class="workspace-kicker">Workspace</p>
+          <h2 id="tool-title">Welcome</h2>
+          <p class="description" id="tool-description">Select one of the six features from the main menu.</p>
+        </div>
+        <div class="workspace-body" id="workspace-body">
+          <div class="welcome">
+            <div class="welcome-icon" aria-hidden="true">∑</div>
+            <p>This web version recreates the features of your C++ Number Analysis System with forms and on-screen results.</p>
+            <div class="welcome-stats">
+              <div class="stat"><strong>5</strong><span>Number tools</span></div>
+              <div class="stat"><strong>1–9</strong><span>Pyramid rows</span></div>
+              <div class="stat"><strong>0–20</strong><span>Factorial range</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer>Number Analysis System · CPROG 1 · Runs in your browser, no installation required</footer>
+  </div>
+
+  <script>
+    const title = document.getElementById('tool-title');
+    const description = document.getElementById('tool-description');
+    const workspaceBody = document.getElementById('workspace-body');
+    const menuButtons = [...document.querySelectorAll('[data-tool]')];
+
+    const tools = {
+      factorial: {
+        number: '1', title: 'Calculate Factorial', description: 'Calculate the factorial of a whole number from −10 to 20.',
+        label: 'Enter a number (−10 to 20)', placeholder: 'Example: 5', min: -10, max: 20, button: 'Calculate factorial'
+      },
+      prime: {
+        number: '2', title: 'Check Prime Number', description: 'Find out whether an integer is a prime number.',
+        label: 'Enter a whole number', placeholder: 'Example: 17', min: -2147483648, max: 2147483647, button: 'Check number'
+      },
+      palindrome: {
+        number: '3', title: 'Reverse Number & Check Palindrome', description: 'Reverse the digits of an integer and check whether the original number reads the same backward.',
+        label: 'Enter a whole number', placeholder: 'Example: 1221', min: -2147483648, max: 2147483647, button: 'Reverse number'
+      },
+      range: {
+        number: '4', title: 'Print Prime Numbers in a Range', description: 'List every prime number between the starting and ending integers.',
+      },
+      pyramid: {
+        number: '5', title: 'Print Number Pyramid', description: 'Create a centered number pattern with 1 to 9 rows.'
+      }
+    };
+
+    function setActive(tool) {
+      menuButtons.forEach(button => {
+        const active = button.dataset.tool === tool;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', String(active));
+      });
+    }
+
+    function renderForm(toolKey) {
+      const tool = tools[toolKey];
+      title.textContent = tool.title;
+      description.textContent = tool.description;
+      if (toolKey === 'range') {
+        workspaceBody.innerHTML = `
+          <form id="range-form" novalidate>
+            <div class="form-grid">
+              <div class="field"><label for="range-start">Starting number</label><input id="range-start" type="number" step="1" required placeholder="Example: 1" inputmode="numeric"></div>
+              <div class="field"><label for="range-end">Ending number</label><input id="range-end" type="number" step="1" required placeholder="Example: 50" inputmode="numeric"></div>
+              <button class="primary" type="submit">Find prime numbers</button>
+            </div>
+          </form>
+          <div class="result" role="status"><p class="result-title">Result</p><pre class="result-content" id="result-content">Your prime numbers will appear here.</pre></div>
+          <p class="hint">For browser performance, the range can contain up to 100,001 integers. Valid integer range: −2,147,483,648 to 2,147,483,647.</p>`;
+        document.getElementById('range-form').addEventListener('submit', handleRange);
+      } else if (toolKey === 'pyramid') {
+        workspaceBody.innerHTML = `
+          <form id="pyramid-form" novalidate>
+            <div class="form-grid">
+              <div class="field"><label for="pyramid-rows">Enter number of rows (1–9)</label><input id="pyramid-rows" type="number" min="1" max="9" step="1" required placeholder="Example: 5" inputmode="numeric"></div>
+              <button class="primary" type="submit">Print pyramid</button>
+            </div>
+          </form>
+          <div class="result" role="status"><p class="result-title">Output</p><pre class="result-content" id="result-content">Your number pyramid will appear here.</pre></div>
+          <p class="hint">The pattern is displayed in a monospaced format to keep its alignment.</p>`;
+        document.getElementById('pyramid-form').addEventListener('submit', handlePyramid);
+      } else {
+        workspaceBody.innerHTML = `
+          <form id="number-form" novalidate>
+            <div class="form-grid">
+              <div class="field"><label for="number-input">${tool.label}</label><input id="number-input" type="number" step="1" required min="${tool.min}" max="${tool.max}" placeholder="${tool.placeholder}" inputmode="numeric"></div>
+              <button class="primary" type="submit">${tool.button}</button>
+            </div>
+          </form>
+          <div class="result" role="status"><p class="result-title">Result</p><p class="result-content" id="result-content">Your result will appear here.</p></div>
+          <p class="hint">Enter a whole number, then select the button to calculate.</p>`;
+        document.getElementById('number-form').addEventListener('submit', event => handleSingleNumber(event, toolKey));
+      }
+    }
+
+    function showResult(message, type = '') {
+      const result = document.getElementById('result-content');
+      result.classList.remove('pyramid-output');
+      if (!result) return;
+      result.textContent = message;
+      result.classList.remove('success', 'error');
+      if (type) result.classList.add(type);
+    }
+
+    function readInteger(input) {
+      const raw = input.value.trim();
+      if (raw === '') return { error: 'Please enter a whole number.' };
+      const value = Number(raw);
+      if (!Number.isFinite(value) || !Number.isInteger(value)) return { error: 'Invalid input! Please enter a whole number.' };
+      if (value < -2147483648 || value > 2147483647) return { error: 'Please enter an integer from −2,147,483,648 to 2,147,483,647.' };
+      return { value };
+    }
+
+    function handleSingleNumber(event, toolKey) {
+      event.preventDefault();
+      const input = document.getElementById('number-input');
+      const parsed = readInteger(input);
+      if (parsed.error) return showResult(parsed.error, 'error');
+      const number = parsed.value;
+
+      if (toolKey === 'factorial') {
+        if (number < -10 || number > 20) return showResult('Invalid number! Enter a number from −10 to 20.', 'error');
+        if (number < 0) return showResult(`Factorial of a negative number (${number}) is not defined.`, 'error');
+        let factorial = 1n;
+        for (let i = 1n; i <= BigInt(number); i++) factorial *= i;
+        return showResult(`${number}! = ${factorial.toString()}`, 'success');
+      }
+
+      if (toolKey === 'prime') {
+        if (isPrime(number)) return showResult(`${number} is a prime number.`, 'success');
+        return showResult(`${number} is not a prime number.`, '');
+      }
+
+      if (toolKey === 'palindrome') {
+        const original = BigInt(number);
+        const isNegative = original < 0n;
+        const digits = (isNegative ? -original : original).toString();
+        const reversedDigits = digits.split('').reverse().join('');
+        const reversed = BigInt(reversedDigits) * (isNegative ? -1n : 1n);
+        const palindrome = !isNegative && original === reversed;
+        const message = `Reversed number: ${reversed.toString()}\n${number} ${palindrome ? 'is a palindrome.' : 'is not a palindrome.'}`;
+        return showResult(message, palindrome ? 'success' : '');
+      }
+    }
+
+    function isPrime(number) {
+      if (number < 2) return false;
+      if (number === 2) return true;
+      if (number % 2 === 0) return false;
+      for (let divisor = 3; divisor <= number / divisor; divisor += 2) {
+        if (number % divisor === 0) return false;
+      }
+      return true;
+    }
+
+    function handleRange(event) {
+      event.preventDefault();
+      const startParsed = readInteger(document.getElementById('range-start'));
+      const endParsed = readInteger(document.getElementById('range-end'));
+      if (startParsed.error) return showResult(`Starting number: ${startParsed.error}`, 'error');
+      if (endParsed.error) return showResult(`Ending number: ${endParsed.error}`, 'error');
+      const start = startParsed.value;
+      const end = endParsed.value;
+      if (start > end) return showResult('Invalid range! The starting number must be less than or equal to the ending number.', 'error');
+      if (end - start > 100000) return showResult('This range is too large for the browser. Please choose a range containing no more than 100,001 integers.', 'error');
+
+      const primes = [];
+      for (let number = Math.max(2, start); number <= end; number++) {
+        if (isPrime(number)) primes.push(number);
+      }
+      if (primes.length === 0) return showResult(`No prime numbers found from ${start} to ${end}.`);
+      return showResult(`Prime numbers from ${start} to ${end}:\n\n${primes.join('  ')}`, 'success');
+    }
+
+    function handlePyramid(event) {
+      event.preventDefault();
+      const parsed = readInteger(document.getElementById('pyramid-rows'));
+      if (parsed.error) return showResult(parsed.error, 'error');
+      const rows = parsed.value;
+      if (rows < 1 || rows > 9) return showResult('Invalid number of rows! Enter 1 to 9.', 'error');
+      const output = [];
+      for (let row = 1; row <= rows; row++) {
+        const spaces = '   '.repeat(rows - row);
+        const numbers = Array.from({ length: row }, (_, index) => index + 1).join('   ');
+        output.push(spaces + numbers);
+      }
+      const result = showResult(output.join('\n'), 'success');
+      document.getElementById('result-content').classList.add('pyramid-output');
+      return result;
+    }
+
+    function showWelcome() {
+      title.textContent = 'Welcome';
+      description.textContent = 'Select one of the six features from the main menu.';
+      workspaceBody.innerHTML = `
+        <div class="welcome">
+          <div class="welcome-icon" aria-hidden="true">∑</div>
+          <p>This web version recreates the features of your C++ Number Analysis System with forms and on-screen results.</p>
+          <div class="welcome-stats">
+            <div class="stat"><strong>5</strong><span>Number tools</span></div>
+            <div class="stat"><strong>1–9</strong><span>Pyramid rows</span></div>
+            <div class="stat"><strong>0–20</strong><span>Factorial range</span></div>
+          </div>
+        </div>`;
+    }
+
+    function showExit() {
+      title.textContent = 'Program terminated';
+      description.textContent = 'You have selected option 6: Exit.';
+      workspaceBody.innerHTML = `
+        <div class="welcome">
+          <div class="welcome-icon" aria-hidden="true">✓</div>
+          <p>Thank you for using the Number Analysis System!</p>
+          <p>This browser page cannot close itself automatically, so you can return to the main menu or close the tab.</p>
+          <div class="exit-actions"><button class="primary" type="button" id="restart-button">Return to main menu</button></div>
+        </div>`;
+      document.getElementById('restart-button').addEventListener('click', () => {
+        setActive('');
+        showWelcome();
+      });
+    }
+
+    menuButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const key = button.dataset.tool;
+        setActive(key);
+        if (key === 'exit') showExit();
+        else if (tools[key]) renderForm(key);
+        else { setActive(''); showWelcome(); }
+      });
+    });
+  </script>
+</body>
+</html>
